@@ -1,6 +1,8 @@
 // Display view - polls state and updates UI
 let currentState = null;
 let lastWordIndex = -1;
+let slideAudio = null;  // Current slide's audio
+let slideAudioTimeout = null;
 
 // Sound effects (placeholders - user can add actual files)
 const sounds = {
@@ -28,6 +30,34 @@ function playSound(name) {
     sound.play().catch(() => {
         // Ignore errors if sound files don't exist
     });
+}
+
+function playSlideAudio(audioSrc) {
+    // Stop any existing slide audio
+    if (slideAudio) {
+        slideAudio.pause();
+        slideAudio = null;
+    }
+    if (slideAudioTimeout) {
+        clearTimeout(slideAudioTimeout);
+        slideAudioTimeout = null;
+    }
+    
+    if (!audioSrc) return;
+    
+    // Create and play new audio
+    slideAudio = new Audio(audioSrc);
+    slideAudio.play().catch(() => {
+        // Silently fail if audio can't play
+    });
+    
+    // Stop after 3 seconds
+    slideAudioTimeout = setTimeout(() => {
+        if (slideAudio) {
+            slideAudio.pause();
+            slideAudio = null;
+        }
+    }, 3000);
 }
 
 function applyTransition(wordCard, badPPMode) {
@@ -74,12 +104,25 @@ function updateDisplay(state) {
     if (words.length > 0 && currentIndex < words.length) {
         const word = words[currentIndex];
 
-        // Check if word changed (for transitions)
+        // Check if word changed (for transitions and audio)
         if (currentIndex !== lastWordIndex) {
             applyTransition(wordCard, badPPMode);
             if (currentIndex > lastWordIndex) {
                 playSound('next');
             }
+            
+            // Play slide-specific audio (if any) for 3 seconds
+            const audioData = state.word_audio && state.word_audio[currentIndex.toString()];
+            if (audioData) {
+                playSlideAudio(audioData.value);
+            } else {
+                // Stop any playing slide audio if no audio for this slide
+                if (slideAudio) {
+                    slideAudio.pause();
+                    slideAudio = null;
+                }
+            }
+            
             lastWordIndex = currentIndex;
         }
 

@@ -11,6 +11,7 @@
         <header>
             <h1>Spelling Bee Control Panel</h1>
             <div class="header-controls">
+                <button id="reload-csv-btn" class="btn-secondary">Reload CSV</button>
                 <button id="reset-btn" class="btn-danger">Reset Game</button>
                 <label class="toggle">
                     <input type="checkbox" id="bad-pp-toggle">
@@ -22,25 +23,21 @@
         <div class="main-content">
             <div class="left-panel">
                 <div class="section">
-                    <h2>Load Words</h2>
-                    <div class="input-group">
-                        <label>Google Sheets CSV URL:</label>
-                        <input type="text" id="csv-url" placeholder="Paste published CSV URL here">
-                        <button id="load-url-btn" class="btn-primary">Load from URL</button>
-                    </div>
-                    <div class="input-group">
-                        <label>Or use sample CSV:</label>
-                        <button id="load-sample-btn" class="btn-secondary">Load Sample</button>
-                    </div>
-                </div>
-
-                <div class="section">
                     <h2>Current Word</h2>
                     <div class="word-info">
                         <div class="round-badge" id="round-badge">Round 1 (1 pt)</div>
                         <div class="word-display-control">
                             <div class="word-text-control" id="word-text-control">No word loaded</div>
-                            <div class="context-text-control" id="context-text-control"></div>
+                        </div>
+                        <div class="word-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Definition:</span>
+                                <span class="detail-value" id="definition-text">—</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Sentence:</span>
+                                <span class="detail-value" id="sentence-text">—</span>
+                            </div>
                         </div>
                         <div class="word-image-control" id="word-image-control">
                             <div class="image-preview" id="image-preview"></div>
@@ -49,6 +46,18 @@
                                 <button id="set-image-url-btn" class="btn-small">Set URL</button>
                                 <input type="file" id="image-file-input" accept="image/*" style="display: none;">
                                 <button id="upload-image-btn" class="btn-small">Upload Image</button>
+                            </div>
+                        </div>
+                        <div class="word-audio-control">
+                            <div class="audio-preview" id="audio-preview">
+                                <span class="audio-status" id="audio-status">No audio</span>
+                                <button id="preview-audio-btn" class="btn-small" style="display: none;">▶ Preview</button>
+                            </div>
+                            <div class="audio-inputs">
+                                <input type="text" id="audio-url-input" placeholder="Audio URL">
+                                <button id="set-audio-url-btn" class="btn-small">Set URL</button>
+                                <input type="file" id="audio-file-input" accept="audio/*" style="display: none;">
+                                <button id="upload-audio-btn" class="btn-small">Upload Audio</button>
                             </div>
                         </div>
                     </div>

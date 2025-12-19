@@ -56,12 +56,20 @@ function updateUI(state) {
         document.getElementById('round-badge').textContent = `${word.round} (${word.points} pt)`;
         document.getElementById('word-text-control').textContent = word.word;
         
-        const contextText = document.getElementById('context-text-control');
-        if (word.context) {
-            contextText.textContent = `"${word.context}"`;
-            contextText.style.display = 'block';
+        // Update definition and sentence
+        const definitionText = document.getElementById('definition-text');
+        const sentenceText = document.getElementById('sentence-text');
+        
+        if (word.definition) {
+            definitionText.textContent = word.definition;
         } else {
-            contextText.style.display = 'none';
+            definitionText.textContent = '—';
+        }
+        
+        if (word.sentence) {
+            sentenceText.textContent = `"${word.sentence}"`;
+        } else {
+            sentenceText.textContent = '—';
         }
 
         // Update image preview
@@ -73,10 +81,29 @@ function updateUI(state) {
             imagePreview.innerHTML = '<div class="placeholder">No image</div>';
         }
 
+        // Update audio preview
+        const audioStatus = document.getElementById('audio-status');
+        const previewBtn = document.getElementById('preview-audio-btn');
+        const audioData = state.word_audio && state.word_audio[currentIndex.toString()];
+        if (audioData) {
+            audioStatus.textContent = '🔊 Audio loaded';
+            audioStatus.classList.add('has-audio');
+            previewBtn.style.display = 'inline-block';
+            previewBtn.dataset.audioSrc = audioData.value;
+        } else {
+            audioStatus.textContent = 'No audio';
+            audioStatus.classList.remove('has-audio');
+            previewBtn.style.display = 'none';
+        }
+
         document.getElementById('word-counter').textContent = `${currentIndex + 1} / ${words.length}`;
     } else {
         document.getElementById('word-text-control').textContent = 'No words loaded';
         document.getElementById('round-badge').textContent = '';
+        document.getElementById('definition-text').textContent = '—';
+        document.getElementById('sentence-text').textContent = '—';
+        document.getElementById('audio-status').textContent = 'No audio';
+        document.getElementById('preview-audio-btn').style.display = 'none';
         document.getElementById('word-counter').textContent = '0 / 0';
     }
 
@@ -110,48 +137,6 @@ function updateUI(state) {
         revealBtn.classList.add('btn-primary');
     }
 }
-
-// Load words from URL
-document.getElementById('load-url-btn').addEventListener('click', () => {
-    const url = document.getElementById('csv-url').value.trim();
-    if (!url) {
-        alert('Please enter a CSV URL');
-        return;
-    }
-    
-    fetch('/api/words', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ csv_url: url })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert('Error: ' + data.error);
-        } else {
-            alert(`Loaded ${data.word_count} words!`);
-            loadState();
-        }
-    });
-});
-
-// Load sample words
-document.getElementById('load-sample-btn').addEventListener('click', () => {
-    fetch('/api/words', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ csv_file: 'sample_words.csv' })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert('Error: ' + data.error);
-        } else {
-            alert(`Loaded ${data.word_count} words!`);
-            loadState();
-        }
-    });
-});
 
 // Navigation
 document.getElementById('prev-btn').addEventListener('click', () => {
@@ -261,6 +246,24 @@ document.getElementById('bad-pp-toggle').addEventListener('change', (e) => {
     updateState({ bad_pp_mode: e.target.checked });
 });
 
+// Reload CSV
+document.getElementById('reload-csv-btn').addEventListener('click', () => {
+    fetch('/api/words', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ csv_file: 'sample_words.csv' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            loadState();
+            alert(`Reloaded ${data.word_count} words from CSV!`);
+        }
+    });
+});
+
 // Reset game
 document.getElementById('reset-btn').addEventListener('click', () => {
     if (!confirm('Are you sure you want to reset the game? This will reset all scores and progress.')) {
@@ -332,6 +335,69 @@ document.getElementById('image-file-input').addEventListener('change', (e) => {
     });
 });
 
+// Audio URL input
+document.getElementById('set-audio-url-btn').addEventListener('click', () => {
+    const url = document.getElementById('audio-url-input').value.trim();
+    if (!url || !currentState || !currentState.words) return;
+    
+    const currentIndex = currentState.current_word_index || 0;
+    fetch(`/api/audio/${currentIndex}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ audio_url: url })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            loadState();
+            document.getElementById('audio-url-input').value = '';
+        }
+    });
+});
+
+// Audio file upload
+document.getElementById('upload-audio-btn').addEventListener('click', () => {
+    document.getElementById('audio-file-input').click();
+});
+
+document.getElementById('audio-file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file || !currentState || !currentState.words) return;
+    
+    const currentIndex = currentState.current_word_index || 0;
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    fetch(`/api/upload-audio/${currentIndex}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            loadState();
+            e.target.value = '';
+        }
+    });
+});
+
+// Audio preview
+let previewAudio = null;
+document.getElementById('preview-audio-btn').addEventListener('click', (e) => {
+    const src = e.target.dataset.audioSrc;
+    if (!src) return;
+    
+    if (previewAudio) {
+        previewAudio.pause();
+    }
+    previewAudio = new Audio(src);
+    previewAudio.play().catch(() => alert('Could not play audio'));
+});
+
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
     // Ignore if typing in input fields
@@ -376,6 +442,21 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Initial load
-loadState();
+// Initial load - auto-load CSV if no words
+loadState().then(state => {
+    if (!state.words || state.words.length === 0) {
+        // Auto-load the local CSV
+        fetch('/api/words', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ csv_file: 'sample_words.csv' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.error) {
+                loadState();
+            }
+        });
+    }
+});
 
