@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Bee - Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/control.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Spelling Bee Control Panel</h1>
+            <div class="header-controls">
+                <button id="reset-btn" class="btn-danger">Reset Game</button>
+                <label class="toggle">
+                    <input type="checkbox" id="bad-pp-toggle">
+                    <span>Bad PowerPoint Mode</span>
+                </label>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="section">
+                    <h2>Load Words</h2>
+                    <div class="input-group">
+                        <label>Google Sheets CSV URL:</label>
+                        <input type="text" id="csv-url" placeholder="Paste published CSV URL here">
+                        <button id="load-url-btn" class="btn-primary">Load from URL</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Or use sample CSV:</label>
+                        <button id="load-sample-btn" class="btn-secondary">Load Sample</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Current Word</h2>
+                    <div class="word-info">
+                        <div class="round-badge" id="round-badge">Round 1 (1 pt)</div>
+                        <div class="word-display-control">
+                            <div class="word-text-control" id="word-text-control">No word loaded</div>
+                            <div class="context-text-control" id="context-text-control"></div>
+                        </div>
+                        <div class="word-image-control" id="word-image-control">
+                            <div class="image-preview" id="image-preview"></div>
+                            <div class="image-inputs">
+                                <input type="text" id="image-url-input" placeholder="Image URL">
+                                <button id="set-image-url-btn" class="btn-small">Set URL</button>
+                                <input type="file" id="image-file-input" accept="image/*" style="display: none;">
+                                <button id="upload-image-btn" class="btn-small">Upload Image</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Navigation</h2>
+                    <div class="nav-controls">
+                        <button id="prev-btn" class="btn-nav">← Previous</button>
+                        <span class="word-counter" id="word-counter">0 / 0</span>
+                        <button id="next-btn" class="btn-nav">Next →</button>
+                    </div>
+                    <div class="nav-controls">
+                        <button id="reveal-btn" class="btn-primary" style="width: 100%;">Show Word on Screen</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Sound Effects</h2>
+                    <div class="sound-controls">
+                        <button id="correct-sound-btn" class="btn-success">🎉 Correct Sound</button>
+                        <button id="wrong-sound-btn" class="btn-danger">💨 Wrong Sound</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="section">
+                    <h2>Team Status</h2>
+                    <div class="team-status-controls">
+                        <button id="set-team-a-btn" class="btn-team active">Team A is Up</button>
+                        <button id="set-team-b-btn" class="btn-team">Team B is Up</button>
+                    </div>
+                    <div class="steal-status">
+                        <button id="toggle-steal-btn" class="btn-secondary">Toggle Steal Mode</button>
+                        <div class="steal-indicator" id="steal-indicator" style="display: none;">
+                            🔄 STEAL ATTEMPT
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Scores</h2>
+                    <div class="score-controls">
+                        <div class="team-score-control">
+                            <div class="team-header">
+                                <span class="team-name">Team A</span>
+                                <span class="current-indicator" id="current-a">●</span>
+                            </div>
+                            <div class="score-display" id="score-display-a">0</div>
+                            <div class="score-buttons">
+                                <button class="btn-score btn-minus" data-team="A" data-action="decrease">−</button>
+                                <button class="btn-score-add" data-team="A" data-points="1">+1</button>
+                                <button class="btn-score-add" data-team="A" data-points="2">+2</button>
+                                <button class="btn-score-add" data-team="A" data-points="5">+5</button>
+                                <button class="btn-score-add" data-team="A" data-points="10">+10</button>
+                                <button class="btn-score-add" data-team="A" data-points="15">+15</button>
+                            </div>
+                            <div class="steal-tracker">
+                                <span>Steals: </span>
+                                <button class="btn-steal-adjust" data-team="A" data-action="decrease">−</button>
+                                <span id="steals-a">0</span>
+                                <button class="btn-steal-adjust" data-team="A" data-action="increase">+</button>
+                            </div>
+                        </div>
+                        <div class="team-score-control">
+                            <div class="team-header">
+                                <span class="team-name">Team B</span>
+                                <span class="current-indicator" id="current-b"></span>
+                            </div>
+                            <div class="score-display" id="score-display-b">0</div>
+                            <div class="score-buttons">
+                                <button class="btn-score btn-minus" data-team="B" data-action="decrease">−</button>
+                                <button class="btn-score-add" data-team="B" data-points="1">+1</button>
+                                <button class="btn-score-add" data-team="B" data-points="2">+2</button>
+                                <button class="btn-score-add" data-team="B" data-points="5">+5</button>
+                                <button class="btn-score-add" data-team="B" data-points="10">+10</button>
+                                <button class="btn-score-add" data-team="B" data-points="15">+15</button>
+                            </div>
+                            <div class="steal-tracker">
+                                <span>Steals: </span>
+                                <button class="btn-steal-adjust" data-team="B" data-action="decrease">−</button>
+                                <span id="steals-b">0</span>
+                                <button class="btn-steal-adjust" data-team="B" data-action="increase">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Round Controls</h2>
+                    <div class="round-controls">
+                        <button id="reset-steals-btn" class="btn-secondary">Reset Steal Counts</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="keyboard-shortcuts">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="shortcuts-grid">
+                <div><kbd>←</kbd> Previous</div>
+                <div><kbd>→</kbd> Next</div>
+                <div><kbd>R</kbd> Reveal Word</div>
+                <div><kbd>A</kbd> Team A is Up</div>
+                <div><kbd>B</kbd> Team B is Up</div>
+                <div><kbd>C</kbd> Correct Sound</div>
+                <div><kbd>X</kbd> Wrong Sound</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/control.js') }}"></script>
+</body>
+</html>

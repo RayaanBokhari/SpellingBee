@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Bee - Display</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/display.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="scores-container">
+            <div class="score team-a">
+                <div class="team-label">Team A</div>
+                <div class="score-value" id="score-a">0</div>
+            </div>
+            <div class="score team-b">
+                <div class="team-label">Team B</div>
+                <div class="score-value" id="score-b">0</div>
+            </div>
+        </div>
+
+        <div class="word-card" id="word-card">
+            <div class="round-info" id="round-info">Round 1 (1 pt)</div>
+            <div class="image-container" id="image-container">
+                <div class="placeholder">No image</div>
+            </div>
+            <div class="word-display" id="word-display">
+                <span class="word-text" id="word-text">Loading...</span>
+            </div>
+            <div class="context-display" id="context-display"></div>
+        </div>
+
+        <div class="progress-info">
+            <span id="word-progress">Word 1 of 0</span>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/display.js') }}"></script>
+</body>
+</html>
+
