@@ -76,9 +76,9 @@ function updateUI(state) {
         const imagePreview = document.getElementById('image-preview');
         const imageData = state.word_images && state.word_images[currentIndex.toString()];
         if (imageData) {
-            imagePreview.innerHTML = `<img src="${imageData.value}" onerror="this.parentElement.innerHTML='<div class=\\'placeholder\\'>Image not found</div>'">`;
+            imagePreview.innerHTML = `<img src="${imageData.value}" onerror="this.parentElement.innerHTML='<div class=\\'drop-hint\\'><span class=\\'drop-icon\\'>📷</span><span>Image not found - drop new image</span></div>'">`;
         } else {
-            imagePreview.innerHTML = '<div class="placeholder">No image</div>';
+            imagePreview.innerHTML = '<div class="drop-hint"><span class="drop-icon">📷</span><span>Drop image here or click to upload</span></div>';
         }
 
         // Update audio preview
@@ -86,12 +86,12 @@ function updateUI(state) {
         const previewBtn = document.getElementById('preview-audio-btn');
         const audioData = state.word_audio && state.word_audio[currentIndex.toString()];
         if (audioData) {
-            audioStatus.textContent = '🔊 Audio loaded';
+            audioStatus.textContent = '🔊 Audio ready';
             audioStatus.classList.add('has-audio');
             previewBtn.style.display = 'inline-block';
             previewBtn.dataset.audioSrc = audioData.value;
         } else {
-            audioStatus.textContent = 'No audio';
+            audioStatus.textContent = '🎵 Drop audio or click';
             audioStatus.classList.remove('has-audio');
             previewBtn.style.display = 'none';
         }
@@ -102,7 +102,8 @@ function updateUI(state) {
         document.getElementById('round-badge').textContent = '';
         document.getElementById('definition-text').textContent = '—';
         document.getElementById('sentence-text').textContent = '—';
-        document.getElementById('audio-status').textContent = 'No audio';
+        document.getElementById('image-preview').innerHTML = '<div class="drop-hint"><span class="drop-icon">📷</span><span>Load words first</span></div>';
+        document.getElementById('audio-status').textContent = '🎵 Load words first';
         document.getElementById('preview-audio-btn').style.display = 'none';
         document.getElementById('word-counter').textContent = '0 / 0';
     }
@@ -307,13 +308,8 @@ document.getElementById('set-image-url-btn').addEventListener('click', () => {
     });
 });
 
-// Image file upload
-document.getElementById('upload-image-btn').addEventListener('click', () => {
-    document.getElementById('image-file-input').click();
-});
-
-document.getElementById('image-file-input').addEventListener('change', (e) => {
-    const file = e.target.files[0];
+// Image upload function (shared by drop and click)
+function uploadImageFile(file) {
     if (!file || !currentState || !currentState.words) return;
     
     const currentIndex = currentState.current_word_index || 0;
@@ -330,9 +326,50 @@ document.getElementById('image-file-input').addEventListener('change', (e) => {
             alert('Error: ' + data.error);
         } else {
             loadState();
-            e.target.value = '';
         }
     });
+}
+
+// Image drop zone - click to upload
+const imageDropZone = document.getElementById('image-drop-zone');
+
+imageDropZone.addEventListener('click', () => {
+    document.getElementById('image-file-input').click();
+});
+
+document.getElementById('image-file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    uploadImageFile(file);
+    e.target.value = '';
+});
+
+// Image drop zone - drag and drop
+imageDropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    imageDropZone.classList.add('drag-over');
+});
+
+imageDropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    imageDropZone.classList.remove('drag-over');
+});
+
+imageDropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    imageDropZone.classList.remove('drag-over');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+            uploadImageFile(file);
+        } else {
+            alert('Please drop an image file');
+        }
+    }
 });
 
 // Audio URL input
@@ -357,13 +394,8 @@ document.getElementById('set-audio-url-btn').addEventListener('click', () => {
     });
 });
 
-// Audio file upload
-document.getElementById('upload-audio-btn').addEventListener('click', () => {
-    document.getElementById('audio-file-input').click();
-});
-
-document.getElementById('audio-file-input').addEventListener('change', (e) => {
-    const file = e.target.files[0];
+// Audio upload function (shared by drop and click)
+function uploadAudioFile(file) {
     if (!file || !currentState || !currentState.words) return;
     
     const currentIndex = currentState.current_word_index || 0;
@@ -380,9 +412,52 @@ document.getElementById('audio-file-input').addEventListener('change', (e) => {
             alert('Error: ' + data.error);
         } else {
             loadState();
-            e.target.value = '';
         }
     });
+}
+
+// Audio drop zone - click to upload
+const audioDropZone = document.getElementById('audio-drop-zone');
+
+audioDropZone.addEventListener('click', (e) => {
+    // Don't trigger if clicking the preview button
+    if (e.target.id === 'preview-audio-btn') return;
+    document.getElementById('audio-file-input').click();
+});
+
+document.getElementById('audio-file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    uploadAudioFile(file);
+    e.target.value = '';
+});
+
+// Audio drop zone - drag and drop
+audioDropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    audioDropZone.classList.add('drag-over');
+});
+
+audioDropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    audioDropZone.classList.remove('drag-over');
+});
+
+audioDropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    audioDropZone.classList.remove('drag-over');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('audio/')) {
+            uploadAudioFile(file);
+        } else {
+            alert('Please drop an audio file (mp3, wav, etc.)');
+        }
+    }
 });
 
 // Audio preview

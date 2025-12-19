@@ -40,24 +40,31 @@
                             </div>
                         </div>
                         <div class="word-image-control" id="word-image-control">
-                            <div class="image-preview" id="image-preview"></div>
-                            <div class="image-inputs">
-                                <input type="text" id="image-url-input" placeholder="Image URL">
+                            <div class="drop-zone" id="image-drop-zone">
+                                <div class="image-preview" id="image-preview">
+                                    <div class="drop-hint">
+                                        <span class="drop-icon">📷</span>
+                                        <span>Drop image here or click to upload</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="file" id="image-file-input" accept="image/*" style="display: none;">
+                            <div class="image-url-row">
+                                <input type="text" id="image-url-input" placeholder="Or paste image URL here">
                                 <button id="set-image-url-btn" class="btn-small">Set URL</button>
-                                <input type="file" id="image-file-input" accept="image/*" style="display: none;">
-                                <button id="upload-image-btn" class="btn-small">Upload Image</button>
                             </div>
                         </div>
                         <div class="word-audio-control">
-                            <div class="audio-preview" id="audio-preview">
-                                <span class="audio-status" id="audio-status">No audio</span>
-                                <button id="preview-audio-btn" class="btn-small" style="display: none;">▶ Preview</button>
+                            <div class="drop-zone audio-drop-zone" id="audio-drop-zone">
+                                <div class="audio-preview" id="audio-preview">
+                                    <span class="audio-status" id="audio-status">🎵 Drop audio or click</span>
+                                    <button id="preview-audio-btn" class="btn-small" style="display: none;">▶ Preview</button>
+                                </div>
                             </div>
-                            <div class="audio-inputs">
-                                <input type="text" id="audio-url-input" placeholder="Audio URL">
+                            <input type="file" id="audio-file-input" accept="audio/*" style="display: none;">
+                            <div class="audio-url-row">
+                                <input type="text" id="audio-url-input" placeholder="Or paste audio URL here">
                                 <button id="set-audio-url-btn" class="btn-small">Set URL</button>
-                                <input type="file" id="audio-file-input" accept="audio/*" style="display: none;">
-                                <button id="upload-audio-btn" class="btn-small">Upload Audio</button>
                             </div>
                         </div>
                     </div>
