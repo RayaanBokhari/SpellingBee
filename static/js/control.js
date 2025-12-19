@@ -109,8 +109,13 @@ function updateUI(state) {
     }
 
     // Update scores
-    document.getElementById('score-display-a').textContent = state.team_a_score || 0;
-    document.getElementById('score-display-b').textContent = state.team_b_score || 0;
+    // Format scores - show .5 for half points, otherwise whole number
+    const formatScore = (score) => {
+        if (score % 1 === 0) return score;
+        return score.toFixed(1);
+    };
+    document.getElementById('score-display-a').textContent = formatScore(state.team_a_score || 0);
+    document.getElementById('score-display-b').textContent = formatScore(state.team_b_score || 0);
 
     // Update current team indicators
     const currentTeam = state.current_team || 'A';
@@ -179,27 +184,30 @@ document.getElementById('set-team-b-btn').addEventListener('click', () => {
     updateState({ current_team: 'B' });
 });
 
-// Steal mode toggle
+// Steal mode toggle (points halved when active)
 document.getElementById('toggle-steal-btn').addEventListener('click', () => {
     stealModeActive = !stealModeActive;
-    const indicator = document.getElementById('steal-indicator');
     const btn = document.getElementById('toggle-steal-btn');
     if (stealModeActive) {
-        indicator.style.display = 'block';
-        btn.textContent = 'Exit Steal Mode';
-        btn.classList.add('btn-warning');
+        btn.textContent = '🔄 Steal Mode: ON (½ points)';
+        btn.classList.add('active');
     } else {
-        indicator.style.display = 'none';
-        btn.textContent = 'Toggle Steal Mode';
-        btn.classList.remove('btn-warning');
+        btn.textContent = '🔄 Steal Mode: OFF';
+        btn.classList.remove('active');
     }
 });
 
-// Score buttons - add points
+// Score buttons - add points (halved if steal mode is active)
 document.querySelectorAll('.btn-score-add').forEach(btn => {
     btn.addEventListener('click', () => {
         const team = btn.dataset.team;
-        const points = parseInt(btn.dataset.points);
+        let points = parseInt(btn.dataset.points);
+        
+        // Halve points if steal mode is active (allow half points)
+        if (stealModeActive) {
+            points = points / 2;
+        }
+        
         const currentScore = team === 'A' ? currentState.team_a_score : currentState.team_b_score;
         const newScore = currentScore + points;
         
@@ -278,9 +286,8 @@ document.getElementById('reset-btn').addEventListener('click', () => {
     .then(response => response.json())
     .then(() => {
         stealModeActive = false;
-        document.getElementById('steal-indicator').style.display = 'none';
-        document.getElementById('toggle-steal-btn').textContent = 'Toggle Steal Mode';
-        document.getElementById('toggle-steal-btn').classList.remove('btn-warning');
+        document.getElementById('toggle-steal-btn').textContent = '🔄 Steal Mode: OFF';
+        document.getElementById('toggle-steal-btn').classList.remove('active');
         loadState();
         alert('Game reset!');
     });

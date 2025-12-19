@@ -3,6 +3,8 @@ let currentState = null;
 let lastWordIndex = -1;
 let slideAudio = null;  // Current slide's audio
 let slideAudioTimeout = null;
+let currentImageSrc = null;  // Track current image to avoid flashing
+let forceImageUpdate = false;  // Force image update on slide change
 
 // Sound effects (placeholders - user can add actual files)
 const sounds = {
@@ -88,8 +90,13 @@ function updateDisplay(state) {
     const badPPMode = state.bad_pp_mode === true;
 
     // Update scores
-    document.getElementById('score-a').textContent = state.team_a_score || 0;
-    document.getElementById('score-b').textContent = state.team_b_score || 0;
+    // Format scores - show .5 for half points, otherwise whole number
+    const formatScore = (score) => {
+        if (score % 1 === 0) return score;
+        return score.toFixed(1);
+    };
+    document.getElementById('score-a').textContent = formatScore(state.team_a_score || 0);
+    document.getElementById('score-b').textContent = formatScore(state.team_b_score || 0);
 
     // Get DOM elements
     const wordCard = document.getElementById('word-card');
@@ -123,6 +130,9 @@ function updateDisplay(state) {
                 }
             }
             
+            // Force image update on slide change
+            forceImageUpdate = true;
+            
             lastWordIndex = currentIndex;
         }
 
@@ -146,19 +156,27 @@ function updateDisplay(state) {
             contextDisplay.style.display = 'none';
         }
 
-        // Update image - always show something (image or placeholder)
+        // Update image - only if source changed OR slide changed (prevents flashing)
         const imageData = state.word_images && state.word_images[currentIndex.toString()];
-        if (imageData) {
-            const img = document.createElement('img');
-            img.src = imageData.value;
-            img.onerror = () => {
-                imageContainer.innerHTML = '<div class="placeholder">Image not found</div>';
-            };
-            imageContainer.innerHTML = '';
-            imageContainer.appendChild(img);
-        } else {
-            // Show placeholder if no image
-            imageContainer.innerHTML = '<div class="placeholder">Add an image for this word</div>';
+        const newImageSrc = imageData ? imageData.value : null;
+        
+        if (forceImageUpdate || newImageSrc !== currentImageSrc) {
+            forceImageUpdate = false;
+            currentImageSrc = newImageSrc;
+            
+            if (imageData) {
+                const img = document.createElement('img');
+                img.src = imageData.value;
+                img.onerror = () => {
+                    imageContainer.innerHTML = '<div class="placeholder">Image not found</div>';
+                    currentImageSrc = null;
+                };
+                imageContainer.innerHTML = '';
+                imageContainer.appendChild(img);
+            } else {
+                // Show placeholder if no image
+                imageContainer.innerHTML = '<div class="placeholder">Add an image for this word</div>';
+            }
         }
 
         // Update progress
